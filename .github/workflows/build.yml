@@ -21,9 +21,9 @@ jobs:
         cargo build --release
 
     - name: cache build output
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: target/release/chapter-dong-dong
-        key: release-build-${{ github.head_ref }}-${{ github.sha }}
+        key: release-build-${{ github.sha }}
 
 

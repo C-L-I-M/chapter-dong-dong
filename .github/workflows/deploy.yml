@@ -21,9 +21,12 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: |
-          path/to/dependencies
-          some/other/dependencies
+          target/release/chapter-dong-dong
         key: release-build-${{ github.head_ref }}-${{ github.sha }}
+
+    - name: test
+      run: |
+        ls .
 
     - name: build Docker image
       uses: docker/build-push-action@v5
