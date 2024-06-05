@@ -27,6 +27,8 @@ jobs:
     - name: test
       run: |
         ls .
+        ls target
+        ls target/release
 
     - name: build Docker image
       uses: docker/build-push-action@v5
