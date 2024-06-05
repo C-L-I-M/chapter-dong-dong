@@ -1,0 +1,14 @@
+name: run tests
+
+on: push
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: run cargo test
+      run: |
+        cargo test

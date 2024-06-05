@@ -1,0 +1,32 @@
+name: build and deploy docker image
+
+on:
+  push:
+    branches:
+      - 'main'
+  workflow_run:
+    workflows:
+      - 'build'
+    types:
+      - completed
+
+jobs:
+  build_docker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: retrieve build output
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          path/to/dependencies
+          some/other/dependencies
+        key: release-build-${{ github.head_ref }}-${{ github.sha }}
+
+    - name: build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        push: false
+        tags: user/app:${{ github.sha }}

@@ -1,0 +1,32 @@
+name: build release artifact
+
+on:
+  push:
+
+  workflow_run:
+    workflows:
+      - 'test'
+    types:
+      - completed
+
+jobs:
+  build_release_artifact:
+    runs-on: ubuntu-latest
+
+    steps: 
+    - uses: actions/checkout@v4
+
+    - name: build artifact
+      run: |
+        cargo build --release
+
+    - name: cache build output
+      uses: actions/cache@v3
+      env:
+        cache-name: release-build-${{ github.head_ref }}-${{ github.sha }}
+        binary_name: chapter-dong-dong
+      with:
+        path: target/release/${{ env.binary_name }}
+        key: ${{ env.cache_name }}
+
+
