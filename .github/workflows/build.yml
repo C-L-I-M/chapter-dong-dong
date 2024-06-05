@@ -1,8 +1,6 @@
 name: build release artifact
 
 on:
-  push:
-
   workflow_run:
     workflows:
       - 'run tests'
