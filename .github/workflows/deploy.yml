@@ -2,11 +2,11 @@ name: build and deploy docker image
 
 on:
   push:
-    branches:
-      - 'main'
+    # branches:
+      # - 'main'
   workflow_run:
     workflows:
-      - 'build'
+      - 'build release artifact'
     types:
       - completed
 
