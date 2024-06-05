@@ -28,10 +28,11 @@ jobs:
       run: |
         ls .
         ls target
+        echo "===="
         ls target/release
+        echo "===="
+        ./target/release/chapter-dong-dong
 
     - name: build Docker image
-      uses: docker/build-push-action@v5
-      with:
-        push: false
-        tags: user/app:${{ github.sha }}
+      run: |
+        docker build -t ${{ github.repository }}:${{ github.sha }} .
