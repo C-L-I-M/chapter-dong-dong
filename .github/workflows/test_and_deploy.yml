@@ -60,8 +60,7 @@ jobs:
           gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
       - name: Build image
-        run: docker build . --tag ${{ env.GAR_LOCATION }}
-        working-directory: WORKING_DIRECTORY
+        run: docker build . --tag ${{ env.GAR_LOCATION }}:${{ github.sha }}
 
       - name: Push image
         run: docker push ${{ env.GAR_LOCATION }}
