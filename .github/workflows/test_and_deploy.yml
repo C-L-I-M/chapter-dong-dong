@@ -44,6 +44,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: cache build output
+        uses: actions/cache/restore@v4
+        with:
+          path: target/release/chapter-dong-dong
+          key: release-build-${{ github.sha }}
+
       - id: "auth"
         uses: "google-github-actions/auth@v1"
         with:
