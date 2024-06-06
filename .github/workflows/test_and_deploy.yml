@@ -40,7 +40,6 @@ jobs:
     env:
       PROJECT_ID: dev-1-420822
       REGION: europe-west9
-      GAR_LOCATION: europe-west9-docker.pkg.dev/dev-1-420822/internal-clim-dev/
 
     steps:
       - uses: actions/checkout@v4
@@ -66,9 +65,10 @@ jobs:
         run: |-
           gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
-      - name: Build image
-        run: docker build . --tag ${{ env.GAR_LOCATION }}chapter-dong-dong:${{ github.sha }}
- 
-      - name: Push image
-        run: docker push ${{ env.GAR_LOCATION }}chapter-dong-dong:${{ github.sha }}
-       
+      - name: Docker build & push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: |
+            europe-west9-docker.pkg.dev/dev-1-420822/internal-clim-dev/chapter-dong-dong:latest
+            europe-west9-docker.pkg.dev/dev-1-420822/internal-clim-dev/chapter-dong-dong:${{ github.sha }}
