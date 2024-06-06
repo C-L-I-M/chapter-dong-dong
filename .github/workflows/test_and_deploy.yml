@@ -37,16 +37,32 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      PROJECT_ID: dev-1-420822
+      REGION: europe-west9
+      GAR_LOCATION: europe-west9-docker.pkg.dev/dev-1-420822/internal-clim-dev/
+
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - id: "auth"
+        uses: "google-github-actions/auth@v1"
+        with:
+          credentials_json: "${{ secrets.GCLOUD_CREDENTIALS }}"
 
-    - name: retrieve build output
-      uses: actions/cache/restore@v4
-      with:
-        path: |
-          target/release/chapter-dong-dong
-        key: release-build-${{ github.sha }}
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
 
-    - name: build Docker image
-      run: |
-        docker build -t clim:${{ github.sha }} .
+      - name: "Use gcloud CLI"
+        run: "gcloud info"
+
+      - name: "Docker auth"
+        run: |-
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build image
+        run: docker build . --tag ${{ env.GAR_LOCATION }}
+        working-directory: WORKING_DIRECTORY
+
+      - name: Push image
+        run: docker push ${{ env.GAR_LOCATION }}
+       
