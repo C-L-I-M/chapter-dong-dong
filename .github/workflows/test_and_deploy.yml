@@ -70,5 +70,5 @@ jobs:
         run: docker build . --tag ${{ env.GAR_LOCATION }}chapter-dong-dong:${{ github.sha }}
  
       - name: Push image
-        run: docker push ${{ env.GAR_LOCATION }}
+        run: docker push ${{ env.GAR_LOCATION }}chapter-dong-dong:${{ github.sha }}
        
