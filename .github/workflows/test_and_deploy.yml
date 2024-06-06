@@ -1,0 +1,52 @@
+name: build release artifact
+
+on:
+  push:
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: run cargo test
+      run: |
+        cargo test
+
+  build_release_artifact:
+    runs-on: ubuntu-latest
+
+    steps: 
+    - uses: actions/checkout@v4
+
+    - name: build artifact
+      run: |
+        cargo build --release
+        ls .
+
+    - name: cache build output
+      uses: actions/cache@v4
+      with:
+        path: target/release/chapter-dong-dong
+        key: release-build-${{ github.sha }}
+
+  build_docker:
+    if: ${{ github.head_ref }} == main
+    needs: build_release_artifact
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: retrieve build output
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          target/release/chapter-dong-dong
+        key: release-build-${{ github.sha }}
+
+    - name: build Docker image
+      run: |
+        docker build -t ${{ github.repository }}:${{ github.sha }} .
