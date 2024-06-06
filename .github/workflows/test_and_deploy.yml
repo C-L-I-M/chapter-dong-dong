@@ -49,4 +49,4 @@ jobs:
 
     - name: build Docker image
       run: |
-        docker build -t ${{ github.repository }}:${{ github.sha }} .
+        docker build -t clim:${{ github.sha }} .
