@@ -32,7 +32,7 @@ jobs:
         key: release-build-${{ github.sha }}
 
   build_docker:
-    if: github.head_ref == "main"
+    if: github.head_ref == 'main'
     needs: build_release_artifact
 
     runs-on: ubuntu-latest
