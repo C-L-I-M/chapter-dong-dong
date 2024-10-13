@@ -1,8 +1,9 @@
 use chapter_dong_dong::cli;
-use chapter_dong_dong::discord::build_client;
+use chapter_dong_dong::discord;
+use chapter_dong_dong::scraper;
 
 async fn start_bot() {
-    let client = build_client().await;
+    let client = discord::build_client().await;
     let client = match client {
         Ok(mut unwrapped_client) => unwrapped_client.start().await,
         Err(_) => panic!("ok!"),
@@ -16,7 +17,7 @@ async fn start_bot() {
 }
 
 async fn test_entrypoint() -> () {
-    println!("noop")
+    scraper::asura::get_last_updated_series().await;
 }
 
 #[tokio::main]
