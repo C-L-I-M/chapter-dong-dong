@@ -1,6 +1,9 @@
+use log::warn;
 use regex::Regex;
 use reqwest;
 use scraper::{Html, Selector};
+use simplelog;
+use simplelog::info;
 
 static LAST_UPDATED_URL: &str = "https://asuracomic.net/series";
 static REGEX: &str = r##"series/(?<series_name>[-a-zA-Z0-9]+)"##;
@@ -36,8 +39,8 @@ pub async fn get_last_updated_series() -> Vec<String> {
     let last_updated_series: Vec<String> =
         get_matches_from_html(&parse_html(&raw_html).await).await;
     for m in &last_updated_series {
-        println!("{}", m);
+        warn!("{}", m);
     }
-    println!("found {} matches", last_updated_series.len());
+    warn!("found {} matches", last_updated_series.len());
     last_updated_series
 }
