@@ -1,41 +1,41 @@
-use poise::serenity_prelude as serenity;
+use serenity::http::Http;
+use simplelog::*;
 
-struct Data {} // User data, which is stored and accessible in all command invocations
-type Error = Box<dyn std::error::Error + Send + Sync>;
-type Context<'a> = poise::Context<'a, Data, Error>;
+use chapter_dong_dong::cli;
+use chapter_dong_dong::discord;
+use chapter_dong_dong::scraper;
 
-/// Displays your or another user's account creation date
-#[poise::command(slash_command, prefix_command)]
-async fn age(
-    ctx: Context<'_>,
-    #[description = "Selected user"] user: Option<serenity::User>,
-) -> Result<(), Error> {
-    let u = user.as_ref().unwrap_or_else(|| ctx.author());
-    let response = format!("{}'s account was created at {}", u.name, u.created_at());
-    ctx.say(response).await?;
-    Ok(())
+async fn test_entrypoint() -> () {
+    scraper::asura::get_last_updated_series().await;
 }
 
 #[tokio::main]
 async fn main() {
-    let token = std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN");
-    let intents = serenity::GatewayIntents::non_privileged();
+    CombinedLogger::init(
+        vec![
+            TermLogger::new(LevelFilter::Warn, Config::default(), TerminalMode::Mixed, ColorChoice::Auto),
+        ]
+    ).unwrap();
 
-    let framework = poise::Framework::builder()
-        .options(poise::FrameworkOptions {
-            commands: vec![age()],
-            ..Default::default()
-        })
-        .setup(|ctx, _ready, framework| {
-            Box::pin(async move {
-                poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                Ok(Data {})
-            })
-        })
-        .build();
+    let cli = cli::build_cli();
+    let matches = cli.get_matches();
 
-    let client = serenity::ClientBuilder::new(token, intents)
-        .framework(framework)
-        .await;
-    client.unwrap().start().await.unwrap();
+
+    if matches.get_flag("debug_entrypoint") {
+        test_entrypoint().await;
+    }
+
+    let mut client = match discord::build_client().await {
+        Ok(client) => client,
+        Err(err) => panic!("{err:?}")
+    };
+
+    if let Some(value) = matches.get_one::<String>("msg") {
+        info!("Send test message: {}", value);
+        discord::send_message(value).await
+    }
+
+    let future = client.start();
+
+    future.await.expect("TODO: panic message");
 }
