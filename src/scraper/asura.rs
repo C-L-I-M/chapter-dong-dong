@@ -64,6 +64,5 @@ pub async fn get_last_updated_series() -> Vec<UpdatedChapter> {
     let raw_html = get_html(LAST_UPDATED_URL).await;
     let last_updated_series = get_matches_from_html(&parse_html(&raw_html).await).await;
 
-    warn!("found {} matches", last_updated_series.len());
     last_updated_series
 }
