@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -49,13 +48,11 @@ func Load() (*Config, error) {
 
 	var cfg Config
 	if err := viper.Unmarshal(&cfg); err != nil {
-		log.Errorf("failed to unmarshal config: %v", err)
 		return nil, fmt.Errorf("failed to unmarshal config: %v", err)
 	}
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	if err := validate.Struct(cfg); err != nil {
-		log.Errorf("invalid config: %v", err)
 		return nil, fmt.Errorf("invalid config: %v ", err)
 	}
 

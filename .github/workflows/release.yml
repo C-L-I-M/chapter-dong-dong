@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_docker:
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECT_ID: dev-1-420822
+      REGION: europe-west9
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: "auth"
+        uses: "google-github-actions/auth@v1"
+        with:
+          credentials_json: "${{ secrets.GCLOUD_CREDENTIALS }}"
+
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
+
+      - name: "Use gcloud CLI"
+        run: "gcloud info"
+
+      - name: "Docker auth"
+        run: |-
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Docker build & push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: |
+            europe-west9-docker.pkg.dev/dev-1-420822/internal-clim-dev/chapter-dong-dong:latest
+            europe-west9-docker.pkg.dev/dev-1-420822/internal-clim-dev/chapter-dong-dong:${{ github.sha }}
