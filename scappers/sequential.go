@@ -5,20 +5,26 @@ import (
 	"net/http"
 
 	"github.com/C-L-I-M/chapter-dong-dong/config"
+	"github.com/go-playground/validator/v10"
 	"github.com/go-viper/mapstructure/v2"
 )
 
 type sequentialScrapper struct {
-	Url                string `mapstructure:"url"`
-	Start              int    `mapstructure:"start"`
-	NotFoundStatusCode int    `mapstructure:"not_found_status_code"`
-	FoundStatusCode    int    `mapstructure:"found_status_code"`
+	Url                string `mapstructure:"url" validate:"required"`
+	Start              int    `mapstructure:"start" validate:"required"`
+	NotFoundStatusCode int    `mapstructure:"not_found_status_code" validate:"required"`
+	FoundStatusCode    int    `mapstructure:"found_status_code" validate:"required"`
 }
 
 func init() {
 	registerScrapper(config.SchedulingModeSequentialPageNotFound, func(parameters map[string]any) (Scrapper, error) {
 		s := &sequentialScrapper{}
 		if err := mapstructure.Decode(parameters, s); err != nil {
+			return nil, fmt.Errorf("invalid parameters: %v", err)
+		}
+
+		validator := validator.New(validator.WithRequiredStructEnabled())
+		if err := validator.Struct(s); err != nil {
 			return nil, fmt.Errorf("invalid parameters: %v", err)
 		}
 
@@ -31,7 +37,13 @@ const StateKeyIndex = "index"
 func (s *sequentialScrapper) Scrap(ctx *ScrappingContext) ([]NewChapter, error) {
 	var chapters []NewChapter
 	for {
-		i := ctx.GetState(StateKeyIndex).(int)
+		iAny := ctx.GetState(StateKeyIndex)
+		if iAny == nil {
+			iAny = s.Start
+		}
+
+		i := iAny.(int)
+
 		url := fmt.Sprintf(s.Url, i)
 		found, err := scrapPage(url, s.NotFoundStatusCode, s.FoundStatusCode)
 		if err != nil {
@@ -46,7 +58,7 @@ func (s *sequentialScrapper) Scrap(ctx *ScrappingContext) ([]NewChapter, error) 
 			Name:     fmt.Sprintf("Chapter %d", i),
 			Number:   fmt.Sprintf("%d", i),
 			Url:      url,
-			SagaSlug: ctx.Saga.Slug,
+			SagaSlug: ctx.SagaSlug,
 		})
 		ctx.SetState(StateKeyIndex, i+1)
 	}

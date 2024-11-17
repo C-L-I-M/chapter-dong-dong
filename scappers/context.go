@@ -6,10 +6,12 @@ import (
 
 	"github.com/C-L-I-M/chapter-dong-dong/config"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 var messageFormat = template.Must(template.New("message").Parse(`
-{{.Name}} - {{.Number}}\n{{.Url}}
+{{.Name}} - {{.Number}}
+{{.Url}}
 `))
 
 type NewChapter struct {
@@ -29,14 +31,20 @@ func (c NewChapter) String() string {
 }
 
 type ScrappingContext struct {
-	Saga    config.Saga
-	state   map[string]any
-	changed bool
+	SagaSlug string
+	Saga     *config.Saga
+	state    map[string]any
+	changed  bool
 }
 
-func FromSaga(saga *config.Saga) *ScrappingContext {
+func FromSaga(sagaSlug string, saga *config.Saga) *ScrappingContext {
+	if saga.State == nil {
+		saga.State = make(map[string]any)
+	}
 	return &ScrappingContext{
-		state: saga.State,
+		SagaSlug: sagaSlug,
+		Saga:     saga,
+		state:    saga.State,
 	}
 }
 
@@ -46,6 +54,7 @@ func (c *ScrappingContext) GetState(key string) any {
 
 func (c *ScrappingContext) SetState(key string, value any) {
 	c.state[key] = value
+	viper.Set("sagas."+c.SagaSlug+".state."+key, value)
 	c.changed = true
 }
 

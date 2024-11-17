@@ -1,29 +1,31 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 type (
 	ScrappingMode string
 
 	Saga struct {
-		Name           string         `json:"name"`
-		Slug           string         `json:"slug"`
-		SchedulingMode ScrappingMode  `json:"scheduling_mode"`
-		Parameters     map[string]any `json:"parameters"`
-		State          map[string]any `json:"state"`
-		Interval       time.Duration  `json:"interval"`
+		Name           string         `mapstructure:"name" validate:"required"`
+		SchedulingMode ScrappingMode  `mapstructure:"scheduling_mode" validate:"required"`
+		Interval       time.Duration  `mapstructure:"interval" validate:"required"`
+		Parameters     map[string]any `mapstructure:"parameters"`
+		State          map[string]any `mapstructure:"state"`
 	}
 
 	Config struct {
-		Sagas []*Saga `json:"series"`
+		Sagas          map[string]*Saga `mapstructure:"sagas" validate:"required"`
+		DiscordToken   string           `mapstructure:"discord_token" validate:"required"`
+		ServerId       string           `mapstructure:"server_id" validate:"required"`
+		StaticChannels []string         `mapstructure:"static_channels"`
 	}
 )
 
@@ -32,7 +34,7 @@ const (
 	// in them. When a 404 is returned on the next chapter, no new chapter is detected, when the page is found, the
 	// next page is scrapped.
 	// Required parameters:
-	// - "url" - the url of the first page, the %i will be replaced with the chapter number
+	// - "url" - the url of the first page, the %v will be replaced with the chapter number
 	// - "start" - the first chapter number
 	// - "not_found_status_code" - the status code to check for to detect a chapter not found
 	// - "found_status_code" - the status code to check for to detect a chapter found
@@ -41,35 +43,28 @@ const (
 
 var configMutex sync.Mutex
 
-func Load(path string) (*Config, error) {
+func Load() (*Config, error) {
 	configMutex.Lock()
 	defer configMutex.Unlock()
 
-	fp, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("%s: failed to open config file: %v", path, err)
+	var cfg Config
+	if err := viper.Unmarshal(&cfg); err != nil {
+		log.Errorf("failed to unmarshal config: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal config: %v", err)
 	}
 
-	var cfg Config
-	if err := json.NewDecoder(fp).Decode(&cfg); err != nil {
-		log.Fatalf("%s: failed to decode config file: %v", path, err)
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	if err := validate.Struct(cfg); err != nil {
+		log.Errorf("invalid config: %v", err)
+		return nil, fmt.Errorf("invalid config: %v ", err)
 	}
 
 	return &cfg, nil
 }
 
-func Save(path string, cfg *Config) error {
+func Save() error {
 	configMutex.Lock()
 	defer configMutex.Unlock()
 
-	fp, err := os.Create(path)
-	if err != nil {
-		return fmt.Errorf("%s: failed to create config file: %v", path, err)
-	}
-
-	if err := json.NewEncoder(fp).Encode(cfg); err != nil {
-		return fmt.Errorf("%s: failed to encode config file: %v", path, err)
-	}
-
-	return nil
+	return viper.WriteConfig()
 }
