@@ -77,14 +77,14 @@ func (c *Channels) ResolveConfigDiff(cfgChannels []string) error {
 	toDelete, toCreate := partitionOldAndNewChannels(currentChans, cfgChannels)
 	log.Info("Channels that should be deleted: ", toDelete)
 
-	for _, channel := range toCreate {
-		channel, err := c.session.GuildChannelCreate(c.serverId, channel, discordgo.ChannelTypeGuildText)
+	for _, channelName := range toCreate {
+		channel, err := c.session.GuildChannelCreate(c.serverId, channelName, discordgo.ChannelTypeGuildText)
 		if err != nil {
-			log.Errorf("Failed to create channel %s: %v", channel, err)
+			log.Errorf("Failed to create channel %s: %v", channelName, err)
 			return err
 		}
-		log.Info("Channel created: ", channel.Name)
-		c.slugToId[channel.Name] = channel.ID
+		log.Info("Channel created: ", channelName)
+		c.slugToId[channelName] = channel.ID
 	}
 
 	return nil

@@ -48,7 +48,7 @@ func run(cmd *cobra.Command, _ []string) {
 				}
 
 				for _, chapter := range chapters {
-					log.Infof("%s: new chapter: %q - %d", sagaSlug, chapter.Name, chapter.Number)
+					log.Infof("%s: new chapter: %q - %s", sagaSlug, chapter.Name, chapter.Number)
 					if err := channels.Send(chapter); err != nil {
 						log.Errorf("Failed to send chapter: %v", err)
 					}
