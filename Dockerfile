@@ -1,13 +1,13 @@
-FROM rust:latest AS builder
+FROM golang:1-alpine AS builder
 
-COPY . .
+ADD . /build
 
-RUN cargo build --release
+WORKDIR /build
 
-FROM alpine:latest AS alpine
+RUN go build -o /chapter-dong-dong
 
-RUN apk add gcompat libc6-compat libc++
+FROM alpine:3 as runner
 
-COPY --from=builder ./target/release/chapter-dong-dong /app/chapter-dong-dong
+COPY --from=builder ./chapter-dong-dong /chapter-dong-dong
 
-CMD ["/app/chapter-dong-dong"]
+CMD ["/chapter-dong-dong"]

@@ -19,3 +19,6 @@ target/
 
 .envrc
 tmp/
+
+.env
+chapter-dong-dong
