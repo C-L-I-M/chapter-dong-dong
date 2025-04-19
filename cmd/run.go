@@ -8,7 +8,7 @@ import (
 
 	"github.com/C-L-I-M/chapter-dong-dong/config"
 	"github.com/C-L-I-M/chapter-dong-dong/discord"
-	"github.com/C-L-I-M/chapter-dong-dong/scappers"
+	"github.com/C-L-I-M/chapter-dong-dong/scrappers"
 	"github.com/bwmarrin/discordgo"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -30,17 +30,17 @@ func run(cmd *cobra.Command, _ []string) {
 	wg.Add(len(cfg.Sagas))
 
 	for sagaSlug, saga := range cfg.Sagas {
-		scrapper, err := scappers.NewScrapper(saga.SchedulingMode, saga.Parameters)
+		scrapper, err := scrappers.NewScrapper(saga.SchedulingMode, saga.Parameters)
 		cobra.CheckErr(err)
 
-		go func(saga *config.Saga, scrapper scappers.Scrapper) {
+		go func(saga *config.Saga, scrapper scrappers.Scrapper) {
 			defer wg.Done()
 
 			ticker := time.NewTicker(saga.Interval)
 			defer ticker.Stop()
 			for range ticker.C {
 				log.Info(sagaSlug + ": tick start")
-				ctx := scappers.FromSaga(sagaSlug, saga)
+				ctx := scrappers.FromSaga(sagaSlug, saga)
 				chapters, err := scrapper.Scrap(ctx)
 				if err != nil {
 					log.Errorf("%s: failed to scrap: %v", sagaSlug, err)

@@ -1,4 +1,4 @@
-package scappers
+package scrappers
 
 import (
 	"fmt"
