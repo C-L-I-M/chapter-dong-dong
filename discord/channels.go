@@ -5,7 +5,7 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/C-L-I-M/chapter-dong-dong/scappers"
+	"github.com/C-L-I-M/chapter-dong-dong/scrappers"
 	"github.com/bwmarrin/discordgo"
 	log "github.com/sirupsen/logrus"
 )
@@ -54,7 +54,7 @@ func partitionOldAndNewChannels(currentChannels, maybeNewChannels []string) ([]s
 	return toDelete, toCreate
 }
 
-func (c *Channels) Send(chapter scappers.NewChapter) error {
+func (c *Channels) Send(chapter scrappers.NewChapter) error {
 	if _, ok := c.slugToId[chapter.SagaSlug]; !ok {
 		channel, err := c.session.GuildChannelCreate(c.serverId, chapter.SagaSlug, discordgo.ChannelTypeGuildText)
 		if err != nil {
